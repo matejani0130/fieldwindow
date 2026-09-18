@@ -321,4 +321,4 @@ module.exports = async function handler(req, res) {
   return res.status(200).json(rpcError(id, -32601, 'Method not found'));
 };
 
-module.exports._private = { PRESETS, SUPPORTED_PROTOCOL, normalize, compile, tools, validOrigin };
+module.exports._private = { PRESETS, SUPPORTED_PROTOCOL, normalize, compile, tools, validOrigin, planByPlace, planCoordinates };
