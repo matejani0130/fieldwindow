@@ -2,6 +2,12 @@ name: FutureEval Bot Test
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "futureeval_bot/**"
+      - ".github/workflows/futureeval_test.yml"
 
 concurrency:
   group: futureeval-test
