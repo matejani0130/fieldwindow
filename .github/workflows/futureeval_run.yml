@@ -16,20 +16,38 @@ jobs:
       run:
         working-directory: futureeval_bot
     steps:
+      - name: Check Fall 2026 start date
+        id: gate
+        shell: bash
+        run: |
+          NOW=$(date -u +%s)
+          START=$(date -u -d "2026-09-28T00:00:00Z" +%s)
+          if [ "$NOW" -ge "$START" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+            echo "Fall FutureEval window is open."
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Not starting forecasts before 2026-09-28."
+          fi
       - name: Checkout
+        if: steps.gate.outputs.ready == 'true'
         uses: actions/checkout@v4
       - name: Python
+        if: steps.gate.outputs.ready == 'true'
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
       - name: Install Poetry
+        if: steps.gate.outputs.ready == 'true'
         uses: snok/install-poetry@v1
         with:
           virtualenvs-create: true
           virtualenvs-in-project: true
       - name: Install
+        if: steps.gate.outputs.ready == 'true'
         run: poetry install --no-interaction --no-root
       - name: Forecast
+        if: steps.gate.outputs.ready == 'true'
         run: poetry run python main.py --mode tournament
         env:
           METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN }}
