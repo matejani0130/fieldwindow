@@ -45,7 +45,7 @@ dotenv.load_dotenv()
 logger = logging.getLogger(__name__)
 
 
-class SummerTemplateBot2026(ForecastBot):
+class JaniFutureEvalBot2026(ForecastBot):
     """
     This is the template bot for Summer 2026 Metaculus AI Tournament.
     This is a copy of what is used by Metaculus to run the Metac Bots in our benchmark, provided as a template for new bot makers.
@@ -670,12 +670,12 @@ if __name__ == "__main__":
     # Configure the bot. The `llms=` block below is commented out to use
     # whichever default models forecasting-tools picks based on your env vars;
     # uncomment and edit to pin specific models.
-    template_bot = SummerTemplateBot2026(
-        research_reports_per_question=1,
-        predictions_per_research_report=5,
+    template_bot = JaniFutureEvalBot2026(
+        research_reports_per_question=3,
+        predictions_per_research_report=3,
         use_research_summary_to_forecast=False,
         publish_reports_to_metaculus=publish_to_metaculus,
-        folder_to_save_reports_to=None,
+        folder_to_save_reports_to="logs/forecasts/",
         skip_previously_forecasted_questions=True,
         extra_metadata_in_explanation=True,
         # llms={
@@ -695,7 +695,7 @@ if __name__ == "__main__":
     # piggyback on the forecasting_tools SDK constants and need updating
     # whenever those rotate seasons.
     TOURNAMENT_URLS = {
-        "tournament": "https://www.metaculus.com/tournament/summer-futureeval-2026/",
+        "tournament": "https://www.metaculus.com/tournament/fall-futureeval-2026/",
         "metaculus_cup": "https://www.metaculus.com/tournament/metaculus-cup-summer-2025/",
         "test_questions": "https://www.metaculus.com/tournament/bot-testing-area/",
     }
