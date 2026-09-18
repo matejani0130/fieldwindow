@@ -92,3 +92,8 @@ A commercial deployment should use an appropriate commercial weather-data arrang
 ## License
 
 MIT. See `LICENSE`.
+
+
+## Live prototype
+
+https://fieldwindow-matejani0130-7016.vercel.app
