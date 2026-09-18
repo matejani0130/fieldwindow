@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>FieldWindow</title>
+  <style>
+    :root{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#18221a;background:#f3f7f1}
+    *{box-sizing:border-box} body{margin:0}
+    main{max-width:980px;margin:0 auto;padding:48px 20px 72px}
+    .hero{background:#173c2a;color:white;border-radius:22px;padding:34px;box-shadow:0 16px 50px #163b2922}
+    h1{font-size:46px;line-height:1;margin:0 0 12px}.sub{max-width:760px;line-height:1.55;color:#dbe9df}
+    .badge{display:inline-block;padding:7px 11px;border-radius:999px;background:#d9f6df;color:#173c2a;font-weight:700;font-size:13px;margin-bottom:18px}
+    .panel{background:white;border-radius:18px;padding:22px;margin-top:20px;box-shadow:0 10px 35px #1b38200f}
+    .row{display:grid;grid-template-columns:1fr 180px 130px;gap:12px}
+    input,select,button{font:inherit;border-radius:10px;border:1px solid #ccd8cd;padding:12px}
+    button{background:#173c2a;color:#fff;border:0;font-weight:700;cursor:pointer}
+    button:disabled{opacity:.55;cursor:wait}
+    .status{margin-top:12px;color:#526158}
+    .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
+    .metric{background:#eff6ef;border-radius:12px;padding:14px}.metric b{display:block;font-size:26px}
+    .window{border:1px solid #dbe5dc;border-radius:14px;padding:16px;margin-top:12px}
+    .window strong{font-size:18px}.small{font-size:13px;color:#68766c;line-height:1.45}
+    .empty{padding:20px;background:#fff7e8;border-radius:12px;margin-top:14px}
+    footer{margin-top:24px;color:#6c786f;font-size:12px;line-height:1.5}
+    @media(max-width:720px){.row{grid-template-columns:1fr}.metrics{grid-template-columns:1fr}h1{font-size:36px}}
+  </style>
+</head>
+<body>
+<main>
+  <section class="hero">
+    <span class="badge">Alexa+ / MCP hackathon prototype</span>
+    <h1>FieldWindow</h1>
+    <p class="sub">Turn live weather forecasts and explicit operating thresholds into explainable, continuous work windows for drone and outdoor field operations.</p>
+  </section>
+
+  <section class="panel">
+    <div class="row">
+      <input id="place" value="Szekszard, Hungary" aria-label="Place" />
+      <select id="preset" aria-label="Preset">
+        <option value="demo_mapping">Demo mapping</option>
+        <option value="demo_scouting">Demo scouting</option>
+        <option value="demo_spraying">Demo spraying</option>
+      </select>
+      <button id="run">Find windows</button>
+    </div>
+    <div class="status" id="status">Ready. Demo presets are transparent heuristics, not authoritative operating limits.</div>
+    <div id="out"></div>
+  </section>
+
+  <footer>
+    Decision-support only. FieldWindow does not replace legal, aviation, safety, manufacturer, pesticide-label, airspace/NOTAM, terrain/obstacle, or on-site requirements.
+    Weather data via Open-Meteo for hackathon/non-commercial prototype use.
+  </footer>
+</main>
+<script>
+const q=s=>document.querySelector(s);
+const fmt=x=>new Intl.DateTimeFormat('en-GB',{dateStyle:'medium',timeStyle:'short'}).format(new Date(x));
+async function run(){
+  const btn=q('#run'); btn.disabled=true; q('#status').textContent='Fetching forecast and compiling windows…'; q('#out').innerHTML='';
+  try{
+    const url='/demo?place='+encodeURIComponent(q('#place').value)+'&preset='+encodeURIComponent(q('#preset').value)+'&days=3';
+    const r=await fetch(url); const d=await r.json(); if(!r.ok||d.error) throw new Error(d.error||('HTTP '+r.status));
+    q('#status').textContent='Live forecast evaluated for '+(d.place?.name||q('#place').value)+', '+(d.place?.country||'')+'.';
+    const s=d.summary||{};
+    const metrics='<div class="metrics">'+
+      '<div class="metric"><b>'+s.qualifying_windows+'</b><span>qualifying windows</span></div>'+
+      '<div class="metric"><b>'+s.eligible_hours+'</b><span>eligible hours</span></div>'+
+      '<div class="metric"><b>'+s.total_hours+'</b><span>forecast hours checked</span></div></div>';
+    const windows=(d.windows||[]).length
+      ? d.windows.map((w,i)=>'<div class="window"><strong>#'+(i+1)+' · '+fmt(w.start)+' → '+fmt(w.end)+'</strong>'+
+        '<div class="small">'+w.hours+' h · max wind '+w.max_wind_kmh+' km/h · max gust '+w.max_gust_kmh+
+        ' km/h · precipitation ≤ '+w.max_precipitation_mm+' mm · min visibility '+Math.round(w.min_visibility_m)+' m</div></div>').join('')
+      : '<div class="empty">No continuous window satisfies the selected demo preset in this forecast horizon.</div>';
+    q('#out').innerHTML=metrics+windows+'<p class="small">Deployment commit: '+d.commit+'</p>';
+  }catch(e){ q('#status').textContent='Demo error: '+e.message; }
+  finally{btn.disabled=false}
+}
+q('#run').addEventListener('click',run);
+run();
+</script>
+</body>
+</html>
